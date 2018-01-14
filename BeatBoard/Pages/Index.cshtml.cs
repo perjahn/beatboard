@@ -15,7 +15,11 @@ namespace BeatBoard.Pages
     {
         public void OnGet()
         {
-            var agents = Agent.GetAgents();
+            string baseurl = System.IO.File.ReadAllLines("elastic.txt")[0];
+            string username = System.IO.File.ReadAllLines("elastic.txt")[1];
+            string password = System.IO.File.ReadAllLines("elastic.txt")[2];
+
+            var agents = Agent.GetAgents(baseurl, username, password);
 
             int count = agents.Count;
         }

@@ -13,16 +13,12 @@ namespace BeatBoardLib
         public DateTime lastdate { get; set; }
         public string version { get; set; }
 
-        public static List<Agent> GetAgents()
+        public static List<Agent> GetAgents(string baseurl, string username, string password)
         {
             List<Agent> agents = new List<Agent>();
 
             using (HttpClient client = new HttpClient())
             {
-                string baseurl = System.IO.File.ReadAllLines("elastic.txt")[0];
-                string username = System.IO.File.ReadAllLines("elastic.txt")[1];
-                string password = System.IO.File.ReadAllLines("elastic.txt")[2];
-
                 client.BaseAddress = new Uri(baseurl);
 
                 string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
@@ -30,7 +26,7 @@ namespace BeatBoardLib
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
 
-                string url = $"{baseurl}/metricbeat-*/_search";
+                string url = $"{baseurl}/_search";
                 string json = "{ \"size\": 0, \"aggs\": { \"names\": { \"terms\": { \"field\": \"beat.name\", \"size\": 1000 } } } }";
 
                 var request = new HttpRequestMessage
@@ -52,7 +48,7 @@ namespace BeatBoardLib
 
                 Console.WriteLine($"Got {buckets.Count} agents.");
 
-                url = $"{baseurl}/metricbeat-*/_search";
+                url = $"{baseurl}/_search";
                 foreach (var bucket in buckets)
                 {
                     string agentsname = bucket["key"].ToString();

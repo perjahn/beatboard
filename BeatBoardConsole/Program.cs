@@ -8,9 +8,15 @@ namespace BeatBoardConsole
     {
         static void Main(string[] args)
         {
+            if (args.Length != 3)
+            {
+                Console.WriteLine("Usage: BeatBoardConsole <baseurl> <username> <password>");
+                return;
+            }
+
             try
             {
-                ListAgents();
+                ListAgents(args[0], args[1], args[2]);
             }
             catch (System.Exception ex)
             {
@@ -18,9 +24,9 @@ namespace BeatBoardConsole
             }
         }
 
-        static void ListAgents()
+        static void ListAgents(string baseurl, string username, string password)
         {
-            var agents = Agent.GetAgents();
+            var agents = Agent.GetAgents(baseurl, username, password);
 
             foreach (var agent in agents.OrderBy(a => a.lastdate).ThenBy(a => a.name))
             {
