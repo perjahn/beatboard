@@ -1,5 +1,6 @@
 ﻿using BeatBoardLib;
 using System;
+using System.Linq;
 
 namespace BeatBoardConsole
 {
@@ -19,13 +20,11 @@ namespace BeatBoardConsole
 
         static void ListAgents()
         {
-            Agent agent = new Agent();
+            var agents = Agent.GetAgents();
 
-            var agents = agent.GetAgentsAsync();
-
-            foreach (var agentname in agents)
+            foreach (var agent in agents.OrderBy(a => a.lastdate).ThenBy(a => a.name))
             {
-                Console.WriteLine($"'{agentname}'");
+                Console.WriteLine($"{agent.lastdate}: {agent.name}");
             }
 
             int count = agents.Count;

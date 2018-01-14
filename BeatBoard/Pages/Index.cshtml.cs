@@ -15,9 +15,7 @@ namespace BeatBoard.Pages
     {
         public void OnGet()
         {
-            Agent agent = new Agent();
-
-            var agents = agent.GetAgentsAsync();
+            var agents = Agent.GetAgents();
 
             int count = agents.Count;
         }
