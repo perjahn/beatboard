@@ -104,7 +104,7 @@ namespace BeatBoardConsole
             {
                 for (int column = 0; column < table.Columns.Count; column++)
                 {
-                    if (!row.IsNull(column) && ((string)row[column]).Length > collengths[column])
+                    if (!row.IsNull(column) && ((string)row[column]).SubstringUntil("\n").Length > collengths[column])
                     {
                         collengths[column] = ((string)row[column]).SubstringUntil("\n").Length;
                     }
