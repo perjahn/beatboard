@@ -1,5 +1,7 @@
 ﻿using BeatBoardLib;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace BeatBoardConsole
@@ -10,13 +12,13 @@ namespace BeatBoardConsole
         {
             if (args.Length != 3)
             {
-                Console.WriteLine("Usage: BeatBoardConsole <baseurl> <username> <password>");
+                Console.WriteLine("Usage: BeatBoardConsole <baseurls> <username> <password>");
                 return;
             }
 
             try
             {
-                ListAgents(args[0], args[1], args[2]);
+                ListAgents(args[0].Split(','), args[1], args[2]);
             }
             catch (System.Exception ex)
             {
@@ -24,18 +26,113 @@ namespace BeatBoardConsole
             }
         }
 
-        static void ListAgents(string baseurl, string username, string password)
+        static void ListAgents(string[] baseurls, string username, string password)
         {
-            var agents = Agent.GetAgents(baseurl, username, password);
+            var agents = baseurls.SelectMany(b =>
+                Agent.GetAgents(b, username, password).Select(a => new
+                {
+                    Url = b,
+                    Beat = b.NthSubstring("/", 3),
+                    LastDate = a.LastDate,
+                    Name = a.Name,
+                    Version = a.Version
+                }))
+                .ToArray();
 
-            foreach (var agent in agents.OrderBy(a => a.lastdate).ThenBy(a => a.name))
+            string[] beatnames = agents.Select(a => a.Name).Distinct().OrderBy(b => b).ToArray();
+            string[] beats = agents.Select(a => a.Beat).Distinct().OrderBy(b => b).ToArray();
+
+
+            DataTable table = new DataTable();
+
+            table.Columns.Add("Name");
+            foreach (string beat in beats)
             {
-                Console.WriteLine($"{agent.lastdate}: {agent.name}");
+                table.Columns.Add(beat);
             }
 
-            int count = agents.Count;
+            foreach (string beatname in beatnames)
+            {
+                DataRow row = table.NewRow();
 
-            Console.WriteLine($"Count: {count}");
+                row[0] = beatname;
+
+                foreach (string beat in beats)
+                {
+                    var agent = agents.Where(a => a.Name == beatname && a.Beat == beat).ToArray();
+                    if (agent.Length > 1)
+                    {
+                        row[beat] = $"ERROR: {agent.Length}";
+                    }
+                    if (agent.Length == 1)
+                    {
+                        row[beat] = $"{agent[0].LastDate}, {agent[0].Version}";
+                    }
+                }
+
+                table.Rows.Add(row);
+            }
+
+            int[] collengths = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Length).ToArray();
+
+            foreach (DataRow row in table.Rows)
+            {
+                for (int column = 0; column < table.Columns.Count; column++)
+                {
+                    if (!row.IsNull(column) && ((string)row[column]).Length > collengths[column])
+                    {
+                        collengths[column] = ((string)row[column]).Length;
+                    }
+                }
+            }
+
+            for (int column = 0; column < table.Columns.Count; column++)
+            {
+                string value = table.Columns[column].ColumnName;
+                string padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
+
+                Console.Write($"{value}{padding}");
+            }
+            Console.WriteLine();
+
+            foreach (DataRow row in table.Rows)
+            {
+                for (int column = 0; column < table.Columns.Count; column++)
+                {
+                    if (row.IsNull(column))
+                    {
+                        Console.Write(string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] + 2)));
+                    }
+                    else
+                    {
+                        string value = (string)row[column];
+                        string padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
+
+                        Console.Write($"{value}{padding}");
+                    }
+                }
+
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static string NthSubstring(this string text, string substring, int count)
+        {
+            int offset = 0;
+            for (int i = 0; i < count; i++)
+            {
+                offset = text.IndexOf(substring, offset);
+                if (offset == -1)
+                {
+                    return string.Empty;
+                }
+                offset += substring.Length;
+            }
+
+            return text.Substring(offset);
         }
     }
 }

@@ -9,9 +9,9 @@ namespace BeatBoardLib
 {
     public class Agent
     {
-        public string name { get; set; }
-        public DateTime lastdate { get; set; }
-        public string version { get; set; }
+        public string Name { get; set; }
+        public DateTime LastDate { get; set; }
+        public string Version { get; set; }
 
         public static List<Agent> GetAgents(string baseurl, string username, string password)
         {
@@ -112,9 +112,9 @@ namespace BeatBoardLib
 
                     agents.Add(new Agent
                     {
-                        name = agentsname,
-                        lastdate = date,
-                        version = version
+                        Name = agentsname,
+                        LastDate = date,
+                        Version = version
                     });
 
                     Console.Write(".");
