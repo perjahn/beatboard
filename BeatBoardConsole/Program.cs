@@ -8,6 +8,11 @@ namespace BeatBoardConsole
 {
     class Program
     {
+        class BeatAgent : Agent
+        {
+            public string Beat { get; set; }
+        };
+
         static void Main(string[] args)
         {
             if (args.Length != 3)
@@ -28,10 +33,9 @@ namespace BeatBoardConsole
 
         static void ListAgents(string[] baseurls, string username, string password)
         {
-            var agents = baseurls.SelectMany(b =>
-                Agent.GetAgents(b, username, password).Select(a => new
+            BeatAgent[] agents = baseurls.SelectMany(b =>
+                Agent.GetAgents(b, username, password).Select(a => new BeatAgent
                 {
-                    Url = b,
                     Beat = b.NthSubstring("/", 3),
                     LastDate = a.LastDate,
                     Name = a.Name,
@@ -42,7 +46,13 @@ namespace BeatBoardConsole
             string[] beatnames = agents.Select(a => a.Name).Distinct().OrderBy(b => b).ToArray();
             string[] beats = agents.Select(a => a.Beat).Distinct().OrderBy(b => b).ToArray();
 
+            DataTable table = GetPivotTable(beatnames, beats, agents);
 
+            PrintTable(table);
+        }
+
+        static DataTable GetPivotTable(string[] beatnames, string[] beats, IEnumerable<BeatAgent> agents)
+        {
             DataTable table = new DataTable();
 
             table.Columns.Add("Name");
@@ -83,7 +93,11 @@ namespace BeatBoardConsole
                 table.Rows.Add(row);
             }
 
+            return table;
+        }
 
+        static void PrintTable(DataTable table)
+        {
             int[] collengths = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Length).ToArray();
 
             foreach (DataRow row in table.Rows)
@@ -96,6 +110,7 @@ namespace BeatBoardConsole
                     }
                 }
             }
+
 
             for (int column = 0; column < table.Columns.Count; column++)
             {
