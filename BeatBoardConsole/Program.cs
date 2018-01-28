@@ -51,6 +51,8 @@ namespace BeatBoardConsole
                 table.Columns.Add(beat);
             }
 
+            DateTime old = DateTime.UtcNow.AddHours(-1);
+
             foreach (string beatname in beatnames)
             {
                 DataRow row = table.NewRow();
@@ -66,12 +68,21 @@ namespace BeatBoardConsole
                     }
                     if (agent.Length == 1)
                     {
-                        row[beat] = $"{agent[0].LastDate}, {agent[0].Version}";
+                        DateTime lastdate = agent[0].LastDate;
+                        if (lastdate < old)
+                        {
+                            row[beat] = $"{agent[0].LastDate}, {agent[0].Version}\nOLD";
+                        }
+                        else
+                        {
+                            row[beat] = $"{agent[0].LastDate}, {agent[0].Version}";
+                        }
                     }
                 }
 
                 table.Rows.Add(row);
             }
+
 
             int[] collengths = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Length).ToArray();
 
@@ -81,7 +92,7 @@ namespace BeatBoardConsole
                 {
                     if (!row.IsNull(column) && ((string)row[column]).Length > collengths[column])
                     {
-                        collengths[column] = ((string)row[column]).Length;
+                        collengths[column] = ((string)row[column]).SubstringUntil("\n").Length;
                     }
                 }
             }
@@ -91,7 +102,7 @@ namespace BeatBoardConsole
                 string value = table.Columns[column].ColumnName;
                 string padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
 
-                Console.Write($"{value}{padding}");
+                Log($"{value}{padding}");
             }
             Console.WriteLine();
 
@@ -101,18 +112,48 @@ namespace BeatBoardConsole
                 {
                     if (row.IsNull(column))
                     {
-                        Console.Write(string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] + 2)));
+                        Log(string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] + 2)));
                     }
                     else
                     {
                         string value = (string)row[column];
-                        string padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
+                        string padding;
+                        if (value.Contains("\n"))
+                        {
+                            value = value.SubstringUntil("\n");
+                            padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
 
-                        Console.Write($"{value}{padding}");
+                            Log($"{value}{padding}", ConsoleColor.Red);
+                        }
+                        else
+                        {
+                            padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
+
+                            Log($"{value}{padding}");
+                        }
                     }
                 }
 
                 Console.WriteLine();
+            }
+        }
+
+        private static void Log(string message)
+        {
+            Console.Write(message);
+        }
+
+        private static void Log(string message, ConsoleColor color)
+        {
+            ConsoleColor oldcolor = Console.ForegroundColor;
+            try
+            {
+                Console.ForegroundColor = color;
+                Console.Write(message);
+            }
+            finally
+            {
+                Console.ForegroundColor = oldcolor;
             }
         }
     }
@@ -133,6 +174,17 @@ namespace BeatBoardConsole
             }
 
             return text.Substring(offset);
+        }
+
+        public static string SubstringUntil(this string text, string terminator)
+        {
+            int offset = text.IndexOf(terminator);
+            if (offset == -1)
+            {
+                return text;
+            }
+
+            return text.Substring(0, offset);
         }
     }
 }
