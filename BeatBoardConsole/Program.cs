@@ -15,15 +15,21 @@ namespace BeatBoardConsole
 
         static void Main(string[] args)
         {
-            if (args.Length != 3)
+            if (args.Length != 4)
             {
-                Console.WriteLine("Usage: BeatBoardConsole <baseurls> <username> <password>");
+                Console.WriteLine("Usage: BeatBoardConsole <baseurls> <username> <password> <duration>");
+                return;
+            }
+            TimeSpan duration;
+            if (!TimeSpan.TryParse(args[3], out duration))
+            {
+                Console.WriteLine($"Couldn't parse duration '{args[3]}'");
                 return;
             }
 
             try
             {
-                ListAgents(args[0].Split(','), args[1], args[2]);
+                ListAgents(args[0].Split(','), args[1], args[2], duration);
             }
             catch (System.Exception ex)
             {
@@ -31,8 +37,13 @@ namespace BeatBoardConsole
             }
         }
 
-        static void ListAgents(string[] baseurls, string username, string password)
+        static void ListAgents(string[] baseurls, string username, string password, TimeSpan duration)
         {
+            DateTime now = DateTime.UtcNow;
+            DateTime old = now.Add(-duration);
+            Console.WriteLine($"Now: {now}");
+            Console.WriteLine($"Old: {old}");
+
             BeatAgent[] agents = baseurls.SelectMany(b =>
                 Agent.GetAgents(b, username, password).Select(a => new BeatAgent
                 {
@@ -46,12 +57,12 @@ namespace BeatBoardConsole
             string[] beatnames = agents.Select(a => a.Name).Distinct().OrderBy(b => b).ToArray();
             string[] beats = agents.Select(a => a.Beat).Distinct().OrderBy(b => b).ToArray();
 
-            DataTable table = GetPivotTable(beatnames, beats, agents);
+            DataTable table = GetPivotTable(beatnames, beats, agents, old);
 
             PrintTable(table);
         }
 
-        static DataTable GetPivotTable(string[] beatnames, string[] beats, IEnumerable<BeatAgent> agents)
+        static DataTable GetPivotTable(string[] beatnames, string[] beats, IEnumerable<BeatAgent> agents, DateTime old)
         {
             DataTable table = new DataTable();
 
@@ -60,8 +71,6 @@ namespace BeatBoardConsole
             {
                 table.Columns.Add(beat);
             }
-
-            DateTime old = DateTime.UtcNow.AddHours(-1);
 
             foreach (string beatname in beatnames)
             {
