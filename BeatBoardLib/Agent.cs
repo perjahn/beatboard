@@ -70,7 +70,7 @@ namespace BeatBoardLib
 
                 JArray buckets = (JArray)jsonresult["aggregations"]["names"]["buckets"];
 
-                Console.WriteLine($"Got {buckets.Count} agents.");
+                Console.WriteLine($"{baseurl}: Got {buckets.Count} agents.");
 
                 url = $"{baseurl}/_search";
                 foreach (var bucket in buckets)
