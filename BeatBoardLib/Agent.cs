@@ -68,7 +68,14 @@ namespace BeatBoardLib
 
                 JObject jsonresult = JObject.Parse(result.Content.ReadAsStringAsync().Result);
 
-                JArray buckets = (JArray)jsonresult["aggregations"]["names"]["buckets"];
+                if (jsonresult["aggregations"] == null)
+                {
+                    return agents;
+                }
+
+                JToken aggs = (JToken)jsonresult["aggregations"];
+                JToken names = (JToken)aggs["names"];
+                JArray buckets = (JArray)names["buckets"];
 
                 Console.WriteLine($"{baseurl}: Got {buckets.Count} agents.");
 
