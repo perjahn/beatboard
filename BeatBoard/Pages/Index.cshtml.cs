@@ -15,13 +15,13 @@ namespace BeatBoard.Pages
     {
         public void OnGet()
         {
-            string baseurl = System.IO.File.ReadAllLines("elastic.txt")[0];
+            string[] baseurls = System.IO.File.ReadAllLines("elastic.txt")[0].Split(',');
             string username = System.IO.File.ReadAllLines("elastic.txt")[1];
             string password = System.IO.File.ReadAllLines("elastic.txt")[2];
 
-            var agents = Agent.GetAgents(baseurl, username, password);
+            var hosts = Host.GetHostsAsync(baseurls, username, password).Result;
 
-            int count = agents.Count;
+            int count = hosts.Count;
         }
     }
 }

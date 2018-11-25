@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BeatBoardLib
 {
@@ -12,8 +13,9 @@ namespace BeatBoardLib
         public string Name { get; set; }
         public DateTime LastDate { get; set; }
         public string Version { get; set; }
+        public string BeatType { get; set; }
 
-        public static List<Agent> GetAgents(string baseurl, string username, string password)
+        public static async Task<List<Agent>> GetAgentsAsync(string baseurl, string username, string password)
         {
             List<Agent> agents = new List<Agent>();
 
@@ -41,7 +43,7 @@ namespace BeatBoardLib
 
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                var result = client.SendAsync(request).Result;
+                var result = await client.SendAsync(request);
                 try
                 {
                     result.EnsureSuccessStatusCode();
@@ -61,12 +63,12 @@ namespace BeatBoardLib
 
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                    result = client.SendAsync(request).Result;
+                    result = await client.SendAsync(request);
                     result.EnsureSuccessStatusCode();
                 }
 
 
-                JObject jsonresult = JObject.Parse(result.Content.ReadAsStringAsync().Result);
+                JObject jsonresult = JObject.Parse(await result.Content.ReadAsStringAsync());
 
                 if (jsonresult["aggregations"] == null)
                 {
@@ -95,10 +97,10 @@ namespace BeatBoardLib
 
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                    result = client.SendAsync(request).Result;
+                    result = await client.SendAsync(request);
                     result.EnsureSuccessStatusCode();
 
-                    jsonresult = JObject.Parse(result.Content.ReadAsStringAsync().Result);
+                    jsonresult = JObject.Parse(await result.Content.ReadAsStringAsync());
 
                     JObject source = (JObject)jsonresult["hits"]["hits"][0]["_source"];
 
@@ -121,7 +123,8 @@ namespace BeatBoardLib
                     {
                         Name = agentsname,
                         LastDate = date,
-                        Version = version
+                        Version = version,
+                        BeatType = LastPart(baseurl, '/')
                     });
 
                     Console.Write(".");
@@ -135,6 +138,12 @@ namespace BeatBoardLib
             }
 
             return agents;
+        }
+
+        private static string LastPart(string s, char c)
+        {
+            int index = s.LastIndexOf(c);
+            return index < 0 ? s : s.Substring(index + 1);
         }
     }
 }

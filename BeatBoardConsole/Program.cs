@@ -1,19 +1,14 @@
 ﻿using BeatBoardLib;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BeatBoardConsole
 {
     class Program
     {
-        class BeatAgent : Agent
-        {
-            public string Beat { get; set; }
-        };
-
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             if (args.Length != 4)
             {
@@ -28,7 +23,7 @@ namespace BeatBoardConsole
 
             try
             {
-                ListAgents(args[0].Split(','), args[1], args[2], duration);
+                await ListBeatsAsync(args[0].Split(','), args[1], args[2], duration);
             }
             catch (Exception ex)
             {
@@ -36,121 +31,86 @@ namespace BeatBoardConsole
             }
         }
 
-        static void ListAgents(string[] baseurls, string username, string password, TimeSpan duration)
+        static async Task ListBeatsAsync(string[] baseurls, string username, string password, TimeSpan duration)
         {
             DateTime now = DateTime.UtcNow;
             DateTime old = now.Add(-duration);
             Console.WriteLine($"Now: {now}");
             Console.WriteLine($"Old: {old}");
 
-            BeatAgent[] agents = baseurls.SelectMany(b =>
-                Agent.GetAgents(b, username, password).Select(a => new BeatAgent
-                {
-                    Beat = b.NthSubstring("/", 3),
-                    LastDate = a.LastDate,
-                    Name = a.Name,
-                    Version = a.Version
-                }))
-                .ToArray();
+            var hosts = await Host.GetHostsAsync(baseurls, username, password);
 
-            string[] beatnames = agents.Select(a => a.Name).Distinct().OrderBy(b => b).ToArray();
-            string[] beats = agents.Select(a => a.Beat).Distinct().OrderBy(b => b).ToArray();
-
-            DataTable table = GetPivotTable(beatnames, beats, agents, old);
-
-            PrintTable(table);
+            PrintTable(hosts, old);
         }
 
-        static DataTable GetPivotTable(string[] beatnames, string[] beats, IEnumerable<BeatAgent> agents, DateTime old)
+        static void PrintTable(List<Host> hosts, DateTime old)
         {
-            DataTable table = new DataTable();
+            var agents = hosts.SelectMany(m => m.Agents).ToArray();
 
-            table.Columns.Add("Name");
-            foreach (string beat in beats)
+            var name = new[] { "Name" };
+            var colheaders = name.Concat(agents.Select(a => a.BeatType).Distinct().OrderBy(b => b)).ToArray();
+            var colwidths = colheaders.Select(c => c.Length).ToArray();
+
+            for (int i = 0; i < colheaders.Length; i++)
             {
-                table.Columns.Add(beat);
-            }
-
-            foreach (string beatname in beatnames)
-            {
-                DataRow row = table.NewRow();
-
-                row[0] = beatname;
-
-                foreach (string beat in beats)
+                if (i == 0)
                 {
-                    var agent = agents.Where(a => a.Name == beatname && a.Beat == beat).ToArray();
-                    if (agent.Length > 1)
+                    foreach (var host in hosts)
                     {
-                        row[beat] = $"ERROR: {agent.Length}";
-                    }
-                    if (agent.Length == 1)
-                    {
-                        DateTime lastdate = agent[0].LastDate;
-                        if (lastdate < old)
+                        string value = host.Agents[0].Name;
+                        if (value.Length > colwidths[i])
                         {
-                            row[beat] = $"{agent[0].LastDate.ToString("yyyy-MM-dd HH:mm:ss")}, {agent[0].Version}\nOLD";
-                        }
-                        else
-                        {
-                            row[beat] = $"{agent[0].LastDate.ToString("yyyy-MM-dd HH:mm:ss")}, {agent[0].Version}";
+                            colwidths[i] = value.Length;
                         }
                     }
                 }
-
-                table.Rows.Add(row);
-            }
-
-            return table;
-        }
-
-        static void PrintTable(DataTable table)
-        {
-            int[] collengths = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Length).ToArray();
-
-            foreach (DataRow row in table.Rows)
-            {
-                for (int column = 0; column < table.Columns.Count; column++)
+                else
                 {
-                    if (!row.IsNull(column) && ((string)row[column]).SubstringUntil("\n").Length > collengths[column])
+                    foreach (var agent in agents.Where(a => a.BeatType == colheaders[i]))
                     {
-                        collengths[column] = ((string)row[column]).SubstringUntil("\n").Length;
+                        string value = $"{agent.LastDate:yyyy-MM-dd HH:mm:ss}, {agent.Version}";
+                        if (value.Length > colwidths[i])
+                        {
+                            colwidths[i] = value.Length;
+                        }
                     }
                 }
             }
 
             int currentOffset = 0;
 
-            for (int column = 0; column < table.Columns.Count; column++)
+            for (int column = 0; column < colheaders.Length; column++)
             {
-                int offset = collengths.Take(column).Sum() + 2 * column;
+                int offset = colwidths.Take(column).Sum() + 2 * column;
                 string prepadding = new string(' ', offset - currentOffset);
                 Console.Write(prepadding);
 
-                string value = table.Columns[column].ColumnName;
+                string value = colheaders[column];
                 Console.Write(value);
 
                 currentOffset = offset + value.Length;
             }
             Console.WriteLine();
 
-            foreach (DataRow row in table.Rows)
+            foreach (var host in hosts.OrderBy(h => h.Agents[0].Name))
             {
-                currentOffset = 0;
+                var value = host.Agents[0].Name;
+                Console.Write(value);
+                currentOffset = value.Length;
 
-                for (int column = 0; column < table.Columns.Count; column++)
+                for (int column = 1; column < colheaders.Length; column++)
                 {
-                    if (!row.IsNull(column))
+                    if (host.Agents.Any(a => a.BeatType == colheaders[column]))
                     {
-                        int offset = collengths.Take(column).Sum() + 2 * column;
+                        int offset = colwidths.Take(column).Sum() + 2 * column;
                         string prepadding = new string(' ', offset - currentOffset);
                         Console.Write(prepadding);
 
-                        string value = (string)row[column];
+                        var agent = host.Agents.Single(a => a.BeatType == colheaders[column]);
+                        value = $"{agent.LastDate:yyyy-MM-dd HH:mm:ss}, {agent.Version}";
 
-                        if (value.Contains("\n"))
+                        if (agent.LastDate < old)
                         {
-                            value = value.SubstringUntil("\n");
                             WriteColor(value, ConsoleColor.Red);
                         }
                         else
@@ -178,36 +138,6 @@ namespace BeatBoardConsole
             {
                 Console.ForegroundColor = oldcolor;
             }
-        }
-    }
-
-    public static class StringExtensions
-    {
-        public static string NthSubstring(this string text, string substring, int count)
-        {
-            int offset = 0;
-            for (int i = 0; i < count; i++)
-            {
-                offset = text.IndexOf(substring, offset);
-                if (offset == -1)
-                {
-                    return string.Empty;
-                }
-                offset += substring.Length;
-            }
-
-            return text.Substring(offset);
-        }
-
-        public static string SubstringUntil(this string text, string terminator)
-        {
-            int offset = text.IndexOf(terminator);
-            if (offset == -1)
-            {
-                return text;
-            }
-
-            return text.Substring(0, offset);
         }
     }
 }
