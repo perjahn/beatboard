@@ -20,8 +20,7 @@ namespace BeatBoardConsole
                 Console.WriteLine("Usage: BeatBoardConsole <baseurls> <username> <password> <duration>");
                 return;
             }
-            TimeSpan duration;
-            if (!TimeSpan.TryParse(args[3], out duration))
+            if (!TimeSpan.TryParse(args[3], out TimeSpan duration))
             {
                 Console.WriteLine($"Couldn't parse duration '{args[3]}'");
                 return;
@@ -31,7 +30,7 @@ namespace BeatBoardConsole
             {
                 ListAgents(args[0].Split(','), args[1], args[2], duration);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Console.Write(ex.ToString());
             }
@@ -90,11 +89,11 @@ namespace BeatBoardConsole
                         DateTime lastdate = agent[0].LastDate;
                         if (lastdate < old)
                         {
-                            row[beat] = $"{agent[0].LastDate}, {agent[0].Version}\nOLD";
+                            row[beat] = $"{agent[0].LastDate.ToString("yyyy-MM-dd HH:mm:ss")}, {agent[0].Version}\nOLD";
                         }
                         else
                         {
-                            row[beat] = $"{agent[0].LastDate}, {agent[0].Version}";
+                            row[beat] = $"{agent[0].LastDate.ToString("yyyy-MM-dd HH:mm:ss")}, {agent[0].Version}";
                         }
                     }
                 }
@@ -120,41 +119,46 @@ namespace BeatBoardConsole
                 }
             }
 
+            int currentOffset = 0;
 
             for (int column = 0; column < table.Columns.Count; column++)
             {
-                string value = table.Columns[column].ColumnName;
-                string padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
+                int offset = collengths.Take(column).Sum() + 2 * column;
+                string prepadding = new string(' ', offset - currentOffset);
+                Console.Write(prepadding);
 
-                Log($"{value}{padding}");
+                string value = table.Columns[column].ColumnName;
+                Console.Write(value);
+
+                currentOffset = offset + value.Length;
             }
             Console.WriteLine();
 
             foreach (DataRow row in table.Rows)
             {
+                currentOffset = 0;
+
                 for (int column = 0; column < table.Columns.Count; column++)
                 {
-                    if (row.IsNull(column))
+                    if (!row.IsNull(column))
                     {
-                        Log(string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] + 2)));
-                    }
-                    else
-                    {
+                        int offset = collengths.Take(column).Sum() + 2 * column;
+                        string prepadding = new string(' ', offset - currentOffset);
+                        Console.Write(prepadding);
+
                         string value = (string)row[column];
-                        string padding;
+
                         if (value.Contains("\n"))
                         {
                             value = value.SubstringUntil("\n");
-                            padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
-
-                            Log($"{value}{padding}", ConsoleColor.Red);
+                            WriteColor(value, ConsoleColor.Red);
                         }
                         else
                         {
-                            padding = string.Join(string.Empty, Enumerable.Repeat(' ', collengths[column] - value.Length + 2));
-
-                            Log($"{value}{padding}");
+                            Console.Write(value);
                         }
+
+                        currentOffset = offset + value.Length;
                     }
                 }
 
@@ -162,12 +166,7 @@ namespace BeatBoardConsole
             }
         }
 
-        private static void Log(string message)
-        {
-            Console.Write(message);
-        }
-
-        private static void Log(string message, ConsoleColor color)
+        private static void WriteColor(string message, ConsoleColor color)
         {
             ConsoleColor oldcolor = Console.ForegroundColor;
             try
