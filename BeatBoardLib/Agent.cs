@@ -15,7 +15,7 @@ namespace BeatBoardLib
         public string Version { get; set; }
         public string BeatType { get; set; }
 
-        public static async Task<List<Agent>> GetAgentsAsync(string baseurl, string username, string password)
+        public static async Task<List<Agent>> GetAgentsAsync(string beaturl, string username, string password)
         {
             List<Agent> agents = new List<Agent>();
 
@@ -23,7 +23,7 @@ namespace BeatBoardLib
             {
                 int malformed = 0;
 
-                client.BaseAddress = new Uri(baseurl);
+                client.BaseAddress = new Uri(beaturl);
 
                 string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
 
@@ -31,7 +31,7 @@ namespace BeatBoardLib
 
                 string fieldname = "beat.name";
 
-                string url = $"{baseurl}/_search";
+                string url = $"{beaturl}/_search";
                 string json = "{ \"size\": 0, \"aggs\": { \"names\": { \"terms\": { \"field\": \"" + fieldname + "\", \"size\": 1000 } } } }";
 
                 var request = new HttpRequestMessage
@@ -79,9 +79,9 @@ namespace BeatBoardLib
                 JToken names = (JToken)aggs["names"];
                 JArray buckets = (JArray)names["buckets"];
 
-                Console.WriteLine($"{baseurl}: Got {buckets.Count} agents.");
+                Console.WriteLine($"{beaturl}: Got {buckets.Count} agents.");
 
-                url = $"{baseurl}/_search";
+                url = $"{beaturl}/_search";
                 foreach (var bucket in buckets)
                 {
                     string agentsname = bucket["key"].ToString();
@@ -124,7 +124,7 @@ namespace BeatBoardLib
                         Name = agentsname,
                         LastDate = date,
                         Version = version,
-                        BeatType = LastPart(baseurl, '/')
+                        BeatType = LastPart(beaturl, '/')
                     });
 
                     Console.Write(".");

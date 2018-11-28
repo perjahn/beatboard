@@ -13,13 +13,13 @@ namespace BeatBoardLib
     {
         public List<Agent> Agents { get; set; }
 
-        public static async Task<List<Host>> GetHostsAsync(string[] baseurls, string username, string password)
+        public static async Task<List<Host>> GetHostsAsync(string[] beaturls, string username, string password)
         {
             var tasks = new List<Task<List<Agent>>>();
 
-            foreach (var baseurl in baseurls)
+            foreach (var beaturl in beaturls)
             {
-                tasks.Add(Agent.GetAgentsAsync(baseurl, username, password));
+                tasks.Add(Agent.GetAgentsAsync(beaturl, username, password));
             }
 
             await Task.WhenAll(tasks);

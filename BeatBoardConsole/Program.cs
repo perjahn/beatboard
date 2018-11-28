@@ -12,7 +12,7 @@ namespace BeatBoardConsole
         {
             if (args.Length != 4)
             {
-                Console.WriteLine("Usage: BeatBoardConsole <baseurls> <username> <password> <duration>");
+                Console.WriteLine("Usage: BeatBoardConsole <beaturls> <username> <password> <duration>");
                 return;
             }
             if (!TimeSpan.TryParse(args[3], out TimeSpan duration))
@@ -31,14 +31,14 @@ namespace BeatBoardConsole
             }
         }
 
-        static async Task ListBeatsAsync(string[] baseurls, string username, string password, TimeSpan duration)
+        static async Task ListBeatsAsync(string[] beaturls, string username, string password, TimeSpan duration)
         {
             DateTime now = DateTime.UtcNow;
             DateTime old = now.Add(-duration);
             Console.WriteLine($"Now: {now}");
             Console.WriteLine($"Old: {old}");
 
-            var hosts = await Host.GetHostsAsync(baseurls, username, password);
+            var hosts = await Host.GetHostsAsync(beaturls, username, password);
 
             PrintTable(hosts, old);
         }

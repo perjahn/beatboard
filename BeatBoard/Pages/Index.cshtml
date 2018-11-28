@@ -1,9 +1,57 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "BeatBoard";
+    ViewData["Title"] = "Beats";
 }
 
-<div>
-hello
-</div>
+<html>
+<head>
+    <style>
+        body, th, td {
+            font-family: Arial, Helvetica, sans-serif
+        }
+        .oldbeat {
+            color: red;
+        }
+        th {
+            text-align: left;
+        }
+        td {
+            padding-right: 10;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                @foreach (var column in Model.Columns)
+                {
+                    <th>@column</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Values.GetLength(0); i++)
+            {
+                <tr>
+                    @for (int j = 0; j < Model.Values.GetLength(1); j++)
+                    {
+                        if (Model.Old[i, j])
+                        {
+                            <td class="oldbeat">@Model.Values[i, j]</td>
+                        }
+                        else
+                        {
+                            <td>@Model.Values[i, j]</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+<p>
+    Hosts: @Model.Values.GetLength(0)
+</p>
+</body>
+</html>
