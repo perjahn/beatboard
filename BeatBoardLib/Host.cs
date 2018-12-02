@@ -11,6 +11,7 @@ namespace BeatBoardLib
 {
     public class Host
     {
+        public string Name { get; set; }
         public List<Agent> Agents { get; set; }
 
         public static async Task<List<Host>> GetHostsAsync(string[] beaturls, string username, string password)
@@ -24,7 +25,7 @@ namespace BeatBoardLib
 
             await Task.WhenAll(tasks);
 
-            return tasks.SelectMany(t => t.Result).GroupBy(a => a.Name).Select(a => new Host { Agents = a.ToList() }).ToList();
+            return tasks.SelectMany(t => t.Result).GroupBy(a => a.Name).Select(a => new Host { Name = a.First().Name, Agents = a.ToList() }).ToList();
         }
     }
 }

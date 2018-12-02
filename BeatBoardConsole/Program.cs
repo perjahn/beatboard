@@ -57,7 +57,7 @@ namespace BeatBoardConsole
                 {
                     foreach (var host in hosts)
                     {
-                        string value = host.Agents[0].Name;
+                        string value = host.Name;
                         if (value.Length > colwidths[i])
                         {
                             colwidths[i] = value.Length;
@@ -92,9 +92,9 @@ namespace BeatBoardConsole
             }
             Console.WriteLine();
 
-            foreach (var host in hosts.OrderBy(h => h.Agents[0].Name))
+            foreach (var host in hosts.OrderBy(h => h.Name))
             {
-                var value = host.Agents[0].Name;
+                var value = host.Name;
                 Console.Write(value);
                 currentOffset = value.Length;
 

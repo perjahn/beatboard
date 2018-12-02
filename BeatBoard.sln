@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeatBoardLib", "BeatBoardLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeatBoard", "BeatBoard\BeatBoard.csproj", "{236DF443-C42B-4C84-B8DA-FD3FB52C8792}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeatBoardSource", "BeatBoardSource\BeatBoardSource.csproj", "{51FE73F0-62C9-49EA-9D60-79BC53AA7A6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{236DF443-C42B-4C84-B8DA-FD3FB52C8792}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{236DF443-C42B-4C84-B8DA-FD3FB52C8792}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{236DF443-C42B-4C84-B8DA-FD3FB52C8792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51FE73F0-62C9-49EA-9D60-79BC53AA7A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51FE73F0-62C9-49EA-9D60-79BC53AA7A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51FE73F0-62C9-49EA-9D60-79BC53AA7A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51FE73F0-62C9-49EA-9D60-79BC53AA7A6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

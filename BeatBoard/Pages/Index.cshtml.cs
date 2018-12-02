@@ -55,7 +55,7 @@ namespace BeatBoard.Pages
             var name = new[] { "Name" };
             Columns = name.Concat(agents.Select(a => a.BeatType).Distinct().OrderBy(b => b)).ToArray();
 
-            var sortedHosts = hosts.OrderBy(h => h.Agents[0].Name).ToArray();
+            var sortedHosts = hosts.OrderBy(h => h.Name).ToArray();
 
             Values = new string[sortedHosts.Length, Columns.Length];
             Old = new bool[sortedHosts.Length, Columns.Length];
@@ -64,7 +64,7 @@ namespace BeatBoard.Pages
             {
                 var host = sortedHosts[hostIndex];
 
-                var value = host.Agents[0].Name;
+                var value = host.Name;
                 Values[hostIndex, 0] = value;
 
                 for (int column = 1; column < Columns.Length; column++)
