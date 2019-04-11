@@ -29,7 +29,7 @@ namespace BeatBoardLib
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                string fieldname = "beat.name";
+                string fieldname = "agent.name";
 
                 string url = $"{beaturl}/_search";
                 string json = "{ \"size\": 0, \"aggs\": { \"names\": { \"terms\": { \"field\": \"" + fieldname + "\", \"size\": 1000 } } } }";
@@ -50,7 +50,7 @@ namespace BeatBoardLib
                 }
                 catch (HttpRequestException)
                 {
-                    fieldname = "beat.name.keyword";
+                    fieldname = "agent.name.keyword";
                     Console.WriteLine($"Using fieldname: '{fieldname}'");
                     json = "{ \"size\": 0, \"aggs\": { \"names\": { \"terms\": { \"field\": \"" + fieldname + "\", \"size\": 1000 } } } }";
 
@@ -117,7 +117,7 @@ namespace BeatBoardLib
                         continue;
                     }
 
-                    string version = source["beat"]["version"].ToString();
+                    string version = source["agent"]["version"].ToString();
 
                     agents.Add(new Agent
                     {
