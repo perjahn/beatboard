@@ -10,22 +10,22 @@ namespace BeatBoardLib
 {
     public class Agent
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public DateTime LastDate { get; set; }
-        public string Version { get; set; }
-        public string BeatType { get; set; }
+        public string Version { get; set; } = string.Empty;
+        public string BeatType { get; set; } = string.Empty;
 
         public static async Task<List<Agent>> GetAgentsAsync(string beaturl, string username, string password)
         {
-            List<Agent> agents = new List<Agent>();
+            var agents = new List<Agent>();
 
-            using (HttpClient client = new HttpClient())
+            using (var client = new HttpClient())
             {
                 int malformed = 0;
 
                 client.BaseAddress = new Uri(beaturl);
 
-                string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+                string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
@@ -68,23 +68,28 @@ namespace BeatBoardLib
                 }
 
 
-                JObject jsonresult = JObject.Parse(await result.Content.ReadAsStringAsync());
+                dynamic jsonresult = JObject.Parse(await result.Content.ReadAsStringAsync());
 
                 if (jsonresult["aggregations"] == null)
                 {
                     return agents;
                 }
 
-                JToken aggs = (JToken)jsonresult["aggregations"];
-                JToken names = (JToken)aggs["names"];
-                JArray buckets = (JArray)names["buckets"];
+                dynamic aggs = (JToken)jsonresult.aggregations;
+                dynamic names = (JToken)aggs.names;
+                dynamic buckets = (JArray)names.buckets;
 
                 Console.WriteLine($"{beaturl}: Got {buckets.Count} agents.");
 
                 url = $"{beaturl}/_search";
                 foreach (var bucket in buckets)
                 {
-                    string agentsname = bucket["key"].ToString();
+                    if (bucket == null)
+                    {
+                        continue;
+                    }
+
+                    string agentsname = bucket.key.ToString();
 
                     json = "{ \"query\": { \"term\": { \"" + fieldname + "\": \"" + agentsname + "\" } }, \"sort\": [ { \"@timestamp\": { \"order\": \"desc\", \"mode\": \"max\" } } ], \"size\": 1 }";
 
@@ -102,7 +107,7 @@ namespace BeatBoardLib
 
                     jsonresult = JObject.Parse(await result.Content.ReadAsStringAsync());
 
-                    JObject source = (JObject)jsonresult["hits"]["hits"][0]["_source"];
+                    dynamic source = (JObject)jsonresult["hits"]["hits"][0]["_source"];
 
                     string datestring = source["@timestamp"].ToString();
                     if (datestring.Contains(","))

@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BeatBoardLib;
+﻿using BeatBoardLib;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BeatBoard.Pages
 {
     public class IndexModel : PageModel
     {
-        public string[] Columns { get; private set; }
-        public string[,] Values { get; private set; }
-        public bool[,] Old { get; private set; }
+        public string[] Columns { get; private set; } = new string[0];
+        public string[,] Values { get; private set; } = new string[0, 0];
+        public bool[,] Old { get; private set; } = new bool[0, 0];
 
         public async Task OnGet()
         {

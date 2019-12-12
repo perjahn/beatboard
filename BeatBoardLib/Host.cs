@@ -1,18 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BeatBoardLib
 {
     public class Host
     {
-        public string Name { get; set; }
-        public List<Agent> Agents { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public List<Agent> Agents { get; set; } = new List<Agent>();
 
         public static async Task<List<Host>> GetHostsAsync(string[] beaturls, string username, string password)
         {
