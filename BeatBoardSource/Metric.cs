@@ -8,7 +8,7 @@ namespace BeatBoardSource
 {
     public class Metric
     {
-        public string target { get; set; }
-        public long[][] datapoints { get; set; }
+        public string target { get; set; } = string.Empty;
+        public long[][] datapoints { get; set; } = new long[0][];
     }
 }

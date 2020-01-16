@@ -18,7 +18,7 @@ namespace BeatBoardSource.Controllers
         [HttpPost]
         public IEnumerable<Annotation> Post(JObject jobject)
         {
-            string s = jobject.ToString();
+            //string s = jobject.ToString();
 
             var a1 = new Annotation
             {
@@ -28,6 +28,7 @@ namespace BeatBoardSource.Controllers
                 tags = "aaa",
                 text = "ccc"
             };
+            /*
             var a2 = new Annotation
             {
                 annotation = "www",
@@ -36,6 +37,7 @@ namespace BeatBoardSource.Controllers
                 tags = "bbb",
                 text = "ddd"
             };
+            */
 
             return new Annotation[] { a1 };
         }

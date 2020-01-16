@@ -11,12 +11,12 @@ namespace BeatBoardSource
     {
         public class Column
         {
-            public string text { get; set; }
-            public string type { get; set; }
+            public string text { get; set; } = string.Empty;
+            public string type { get; set; } = string.Empty;
         }
 
-        public Column[] columns { get; set; }
-        public JArray[] rows { get; set; }
-        public string type { get; set; }
+        public Column[] columns { get; set; } = new Column[0];
+        public JArray[] rows { get; set; } = new JArray[0];
+        public string type { get; set; } = string.Empty;
     }
 }

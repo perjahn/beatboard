@@ -8,10 +8,10 @@ namespace BeatBoardSource
 {
     public class Annotation
     {
-        public string annotation { get; set; }
-        public string time { get; set; }
-        public string title { get; set; }
-        public string tags { get; set; }
-        public string text { get; set; }
+        public string annotation { get; set; } = string.Empty;
+        public string time { get; set; } = string.Empty;
+        public string title { get; set; } = string.Empty;
+        public string tags { get; set; } = string.Empty;
+        public string text { get; set; } = string.Empty;
     }
 }

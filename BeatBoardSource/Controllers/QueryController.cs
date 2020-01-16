@@ -58,9 +58,10 @@ namespace BeatBoardSource.Controllers
 
             foreach (var host in hosts)
             {
-                JArray row = new JArray();
-
-                row.Add(host.Name);
+                JArray row = new JArray
+                {
+                    host.Name
+                };
 
                 foreach (var column in columns.Skip(1))
                 {
